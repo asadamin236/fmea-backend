@@ -13,10 +13,21 @@ const app = express();
 connectDB();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://fmea-frontend.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["https://fmea-frontend.vercel.app"], // allow frontend URL
-    credentials: true, // if you're using cookies or authorization headers
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 app.use(express.json());
