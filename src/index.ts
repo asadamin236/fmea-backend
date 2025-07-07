@@ -41,8 +41,5 @@ app.use("/api/equipment-types", equipmentTypeRoutes);
 app.use("/api/teams", teamRoutes); // 👥 Teams
 app.use("/api/users", userRoutes); // 👤 Users
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+// ✅ Important: Do not use app.listen in Vercel — export the app instead
+export default app;
