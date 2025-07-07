@@ -15,7 +15,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: "https://fmea-backend.vercel.app/", // ✅ Frontend URL (adjust for production)
+    origin: "https://fmea-frontend.vercel.app/", // ✅ Frontend URL (adjust for production)
     credentials: true,
   })
 );
