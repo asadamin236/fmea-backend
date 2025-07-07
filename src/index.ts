@@ -12,24 +12,19 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://fmea-frontend.vercel.app",
-];
-
+// ✅ CORS middleware — use this first
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: ["https://fmea-frontend.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// ✅ Handle preflight OPTIONS requests globally
+app.options("*", cors());
+
 app.use(express.json());
 
 // Route imports
