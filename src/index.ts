@@ -15,7 +15,7 @@ connectDB();
 // ✅ CORS middleware — use this first
 app.use(
   cors({
-    origin: ["https://fmea-frontend.vercel.app"],
+    origin: [process.env.FRONTEND_URL || "http://localhost:5000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
