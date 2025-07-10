@@ -12,19 +12,13 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// ✅ CORS middleware — use this first
+// Middleware
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || "http://localhost:5000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: "http://localhost:8080", // ✅ Frontend URL (adjust for production)
     credentials: true,
   })
 );
-
-// ✅ Handle preflight OPTIONS requests globally
-app.options("*", cors());
-
 app.use(express.json());
 
 // Route imports
@@ -41,5 +35,8 @@ app.use("/api/equipment-types", equipmentTypeRoutes);
 app.use("/api/teams", teamRoutes); // 👥 Teams
 app.use("/api/users", userRoutes); // 👤 Users
 
-// ✅ Important: Do not use app.listen in Vercel — export the app instead
-export default app;
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
