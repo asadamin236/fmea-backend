@@ -11,7 +11,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "*", // You can adjust later to production origin
+    origin: "https://fmea-backend.vercel.app", // You can adjust later to production origin
     credentials: true,
   })
 );
