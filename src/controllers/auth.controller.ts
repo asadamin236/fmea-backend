@@ -6,7 +6,6 @@ import User from "../models/user.model";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || "default_admin_key";
 
-// --- Signup ---
 export const signup = async (req: Request, res: Response) => {
   try {
     const { email, password, name, role = "user", adminKey } = req.body;
@@ -39,7 +38,6 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-// --- Login ---
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
