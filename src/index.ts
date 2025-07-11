@@ -9,21 +9,18 @@ const app = express();
 
 connectDB();
 
-const allowedOrigins = [
-  "http://localhost:5000",
-  "https://fmea-frontend.vercel.app",
-];
+const allowedOrigins = ["https://fmea-frontend.vercel.app"];
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+        callback(null, origin); // ✅ Return the actual origin, NOT '*'
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, // ✅ Needed to support cookies/headers
   })
 );
 
