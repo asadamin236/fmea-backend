@@ -65,24 +65,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     console.log("🔍 Attempting to find user with email:", email);
     
-    // Check if database is connected
-    if (!req.app.locals.dbConnected) {
-      console.log("❌ Database not connected");
-      res.status(500).json({ 
-        error: "Database connection error",
-        message: "Please try again later or contact support"
-      });
-      return;
-    }
-    
     // Check mongoose connection state
     const mongoose = require('mongoose');
     const dbState = mongoose.connection.readyState;
+    console.log("📊 Database state:", dbState);
+    
     if (dbState !== 1) {
       console.log("❌ Database not ready, state:", dbState);
       res.status(500).json({ 
-        error: "Database not ready",
-        message: "Please try again in a few moments"
+        error: "Database connection error",
+        message: "Database is not connected. Please try again later."
       });
       return;
     }

@@ -67,15 +67,6 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         console.log("🔍 Attempting to find user with email:", email);
-        // Check if database is connected
-        if (!req.app.locals.dbConnected) {
-            console.log("❌ Database not connected");
-            res.status(500).json({
-                error: "Database connection error",
-                message: "Please try again later or contact support"
-            });
-            return;
-        }
         // Check mongoose connection state
         const mongoose = require('mongoose');
         const dbState = mongoose.connection.readyState;

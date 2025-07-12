@@ -11,11 +11,15 @@ dotenv.config();
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then((dbConnected) => {
+  app.locals.dbConnected = dbConnected;
+  console.log("📊 Database connection status:", dbConnected);
+});
 
 // CORS configuration for production
 const allowedOrigins = [
   "http://localhost:3000", // Development
+  "http://localhost:5000", // Main development port
   "http://localhost:8080", // Alternative dev port
   "https://fmea-frontend.vercel.app", // Production frontend
   "https://fmea-risk-insight-system.vercel.app", // Alternative production URL
@@ -67,8 +71,19 @@ app.get("/", (req, res) => {
 });
 
 // Error handling
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("❌ Global error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 app.use("*", (req, res) => {
   res.status(404).json({ error: "Route not found" });
+});
+
+// Start server on port 5000
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
 
 export default app;
