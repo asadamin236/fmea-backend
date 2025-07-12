@@ -1,4 +1,3 @@
-// src/index.ts
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -11,32 +10,21 @@ connectDB();
 
 const allowedOrigins = ["https://fmea-frontend.vercel.app"];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: function (origin: any, callback: any) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, origin);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 
-app.options(
-  "*",
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
+
+// ✅ This must be BEFORE routes
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 
@@ -55,4 +43,4 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/components", componentRoutes);
 
-export default app; // ✅ Export app for serverless use
+export default app;
