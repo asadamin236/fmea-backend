@@ -7,6 +7,10 @@ const router = (0, express_1.Router)();
 router.get("/test", (req, res) => {
     res.json({ message: "Auth routes are working!" });
 });
+// Simple test route
+router.get("/ping", (req, res) => {
+    res.json({ message: "Auth ping successful!" });
+});
 router.post("/signup", auth_controller_1.signup);
 router.post("/login", auth_controller_1.login);
 exports.default = router;

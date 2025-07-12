@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db";
-import componentRoutes from './routes/components.routes';
 
 // Load environment variables
 dotenv.config();
@@ -20,37 +19,21 @@ connectDB().then((dbConnected) => {
   console.log("  - JWT_SECRET exists:", !!process.env.JWT_SECRET);
 });
 
-// CORS configuration for production
-const allowedOrigins = [
-  "http://localhost:3000", // Development
-  "http://localhost:5000", // Main development port
-  "http://localhost:8080", // Alternative dev port
-  "https://fmea-frontend.vercel.app", // Production frontend
-  "https://fmea-risk-insight-system.vercel.app", // Alternative production URL
-];
-
-const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-
-// Middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
+// Simple CORS configuration
+app.use(cors({
+  origin: true,
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
+
+// Add request logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 // Route imports
 import authRoutes from "./routes/auth.routes";
@@ -58,6 +41,7 @@ import equipmentClassRoutes from "./routes/equipmentClass.routes";
 import equipmentTypeRoutes from "./routes/equipmentType.routes";
 import teamRoutes from "./routes/team.routes";
 import userRoutes from "./routes/user.routes";
+import componentRoutes from "./routes/components.routes";
 import manufacturerRoutes from "./routes/manufacturer.routes";
 
 // Route registration

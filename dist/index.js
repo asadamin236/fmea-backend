@@ -7,7 +7,6 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./config/db");
-const components_routes_1 = __importDefault(require("./routes/components.routes"));
 // Load environment variables
 dotenv_1.default.config();
 // Initialize Express app
@@ -21,40 +20,26 @@ const app = (0, express_1.default)();
     console.log("  - MONGO_URI exists:", !!process.env.MONGO_URI);
     console.log("  - JWT_SECRET exists:", !!process.env.JWT_SECRET);
 });
-// CORS configuration for production
-const allowedOrigins = [
-    "http://localhost:3000", // Development
-    "http://localhost:5000", // Main development port
-    "http://localhost:8080", // Alternative dev port
-    "https://fmea-frontend.vercel.app", // Production frontend
-    "https://fmea-risk-insight-system.vercel.app", // Alternative production URL
-];
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin)
-            return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        }
-        else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-// Middleware
-app.use((0, cors_1.default)(corsOptions));
-// Handle preflight requests
-app.options('*', (0, cors_1.default)(corsOptions));
+// Simple CORS configuration
+app.use((0, cors_1.default)({
+    origin: true,
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express_1.default.json());
+// Add request logging
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+});
 // Route imports
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const equipmentClass_routes_1 = __importDefault(require("./routes/equipmentClass.routes"));
 const equipmentType_routes_1 = __importDefault(require("./routes/equipmentType.routes"));
 const team_routes_1 = __importDefault(require("./routes/team.routes"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
+const components_routes_1 = __importDefault(require("./routes/components.routes"));
 const manufacturer_routes_1 = __importDefault(require("./routes/manufacturer.routes"));
 // Route registration
 app.use("/api/auth", auth_routes_1.default);
