@@ -1,18 +1,17 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import serverless from "serverless-http";
 import { connectDB } from "./config/db";
 
 dotenv.config();
 
 const app = express();
 
-// ✅ CORS Configuration with Frontend Link
+// CORS Configuration
 app.use(
   cors({
-    origin: ["https://fmea-frontend.vercel.app"],
-    credentials: true,
+    origin: ["https://fmea-frontend.vercel.app", "http://localhost:3000"],
+    credentials: false,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -20,6 +19,7 @@ app.use(
 
 app.use(express.json());
 
+// Connect to MongoDB
 connectDB().then((dbConnected) => {
   app.locals.dbConnected = dbConnected;
   console.log("📊 Database connection status:", dbConnected);
@@ -76,5 +76,4 @@ app.use("*", (req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// ✅ Export handler for Vercel
-export const handler = serverless(app);
+export default app;

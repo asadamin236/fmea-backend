@@ -17,17 +17,12 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || "default_admin_key";
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("📝 Signup attempt:", req.body.email);
-        const { email, password, name, role = "user", adminKey } = req.body;
+        const { email, password, name } = req.body;
         if (!email || !password || !name) {
             res.status(400).json({ error: "Email, name, and password are required" });
-            return;
-        }
-        if (role === "admin" && (adminKey === null || adminKey === void 0 ? void 0 : adminKey.trim()) !== (ADMIN_SECRET_KEY === null || ADMIN_SECRET_KEY === void 0 ? void 0 : ADMIN_SECRET_KEY.trim())) {
-            res.status(403).json({ error: "Unauthorized to create admin user" });
             return;
         }
         const existingUser = yield user_model_1.default.findOne({ email });
@@ -36,7 +31,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
-        const newUser = new user_model_1.default({ email, password: hashedPassword, name, role });
+        const newUser = new user_model_1.default({ email, password: hashedPassword, name, role: "user" });
         yield newUser.save();
         console.log("✅ User registered successfully:", email);
         res.status(201).json({ message: "User registered successfully" });

@@ -4,21 +4,15 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || "default_admin_key";
 
-export const signup = async (req: any, res: any): Promise<void> => {
+export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("📝 Signup attempt:", req.body.email);
     
-    const { email, password, name, role = "user", adminKey } = req.body;
+    const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
       res.status(400).json({ error: "Email, name, and password are required" });
-      return;
-    }
-
-    if (role === "admin" && adminKey?.trim() !== ADMIN_SECRET_KEY?.trim()) {
-      res.status(403).json({ error: "Unauthorized to create admin user" });
       return;
     }
 
@@ -29,7 +23,7 @@ export const signup = async (req: any, res: any): Promise<void> => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hashedPassword, name, role });
+    const newUser = new User({ email, password: hashedPassword, name, role: "user" });
     await newUser.save();
 
     console.log("✅ User registered successfully:", email);
@@ -40,7 +34,7 @@ export const signup = async (req: any, res: any): Promise<void> => {
   }
 };
 
-export const login = async (req: any, res: any): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("🔐 Login attempt:", req.body.email);
     
