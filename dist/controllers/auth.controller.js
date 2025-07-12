@@ -70,11 +70,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check mongoose connection state
         const mongoose = require('mongoose');
         const dbState = mongoose.connection.readyState;
+        console.log("📊 Database state:", dbState);
         if (dbState !== 1) {
             console.log("❌ Database not ready, state:", dbState);
             res.status(500).json({
-                error: "Database not ready",
-                message: "Please try again in a few moments"
+                error: "Database connection error",
+                message: "Database is not connected. Please try again later."
             });
             return;
         }

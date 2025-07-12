@@ -20,6 +20,7 @@ const app = (0, express_1.default)();
 // CORS configuration for production
 const allowedOrigins = [
     "http://localhost:3000", // Development
+    "http://localhost:5000", // Main development port
     "http://localhost:8080", // Alternative dev port
     "https://fmea-frontend.vercel.app", // Production frontend
     "https://fmea-risk-insight-system.vercel.app", // Alternative production URL
