@@ -1,162 +1,105 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const mongoose_1 = __importDefault(require("mongoose"));
-const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const cors_1 = __importDefault(require("cors"));
+const db_1 = require("./config/db");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+// Log environment variables (without sensitive data)
+console.log("🔧 Environment check:");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+console.log("ADMIN_SECRET_KEY exists:", !!process.env.ADMIN_SECRET_KEY);
+// Connect to database
+(0, db_1.connectDB)().then((dbConnected) => {
+    app.locals.dbConnected = dbConnected;
+    console.log("📊 Database connection status:", dbConnected);
+});
+const allowedOrigins = ["https://fmea-frontend.vercel.app", "http://localhost:5173", "http://localhost:3000"];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, origin);
+        }
+        else {
+            console.log("🚫 CORS blocked origin:", origin);
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use((0, cors_1.default)(corsOptions));
+// ✅ This must be BEFORE routes
+app.options("*", (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
-// Simple health check without DB
+// Add request logging middleware
+app.use((req, res, next) => {
+    console.log(`📨 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+});
+// Test route to check if server is working
 app.get("/", (req, res) => {
     res.json({
-        status: "ok",
-        message: "Backend running",
-        timestamp: new Date().toISOString()
+        message: "FMEA Backend is running successfully! 🚀",
+        timestamp: new Date().toISOString(),
+        status: "OK",
+        environment: process.env.NODE_ENV || "development"
     });
 });
-// Test environment variables
-app.get("/env-test", (req, res) => {
+// Health check route
+app.get("/health", (req, res) => {
     res.json({
-        hasMongoURI: !!process.env.MONGO_URI,
-        mongoURILength: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
-        nodeEnv: process.env.NODE_ENV || "development",
-        hasJWTSecret: !!process.env.JWT_SECRET
+        status: "healthy",
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || "development",
+        mongoConnected: !!process.env.MONGO_URI
     });
 });
-// Try to connect to MongoDB
-let dbConnected = false;
-const mongoURI = process.env.MONGO_URI;
-if (mongoURI) {
-    console.log("🔗 Attempting MongoDB connection...");
-    mongoose_1.default
-        .connect(mongoURI)
-        .then(() => {
-        console.log("✅ MongoDB connected successfully");
-        dbConnected = true;
-    })
-        .catch((err) => {
-        console.error("❌ MongoDB connection failed:", err.message);
-        dbConnected = false;
-    });
-}
-else {
-    console.error("❌ MONGO_URI not found in environment variables");
-}
-// DB status route
-app.get("/db-status", (req, res) => {
-    const state = mongoose_1.default.connection.readyState;
-    res.json({
-        dbState: state,
-        isConnected: state === 1,
-        dbConnected: dbConnected,
-        hasMongoURI: !!mongoURI
+// Routes
+const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const equipmentClass_routes_1 = __importDefault(require("./routes/equipmentClass.routes"));
+const equipmentType_routes_1 = __importDefault(require("./routes/equipmentType.routes"));
+const team_routes_1 = __importDefault(require("./routes/team.routes"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
+const components_routes_1 = __importDefault(require("./routes/components.routes"));
+const manufacturer_routes_1 = __importDefault(require("./routes/manufacturer.routes"));
+app.use("/api/auth", auth_routes_1.default);
+app.use("/api/equipment-class", equipmentClass_routes_1.default);
+app.use("/api/equipment-types", equipmentType_routes_1.default);
+app.use("/api/teams", team_routes_1.default);
+app.use("/api/users", user_routes_1.default);
+app.use("/api/components", components_routes_1.default);
+app.use("/api/manufacturers", manufacturer_routes_1.default);
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error("❌ Global error handler:");
+    console.error("  - Error name:", err.name);
+    console.error("  - Error message:", err.message);
+    console.error("  - Error stack:", err.stack);
+    console.error("  - Request URL:", req.url);
+    console.error("  - Request method:", req.method);
+    res.status(500).json({
+        error: "Internal server error",
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+        timestamp: new Date().toISOString(),
+        path: req.url,
+        method: req.method
     });
 });
-// Simple User Schema
-const userSchema = new mongoose_1.default.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, default: "user" }
-}, { timestamps: true });
-const User = mongoose_1.default.model("User", userSchema);
-// Login route
-app.post("/api/auth/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        console.log("🔐 Login attempt:", req.body.email);
-        const { email, password } = req.body;
-        if (!email || !password) {
-            res.status(400).json({ error: "Email and password required" });
-            return;
-        }
-        if (!dbConnected) {
-            res.status(500).json({ error: "Database not connected" });
-            return;
-        }
-        const user = yield User.findOne({ email: email.toLowerCase() });
-        if (!user) {
-            res.status(401).json({ error: "Invalid email or password" });
-            return;
-        }
-        const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password);
-        if (!isPasswordValid) {
-            res.status(401).json({ error: "Invalid email or password" });
-            return;
-        }
-        const token = jsonwebtoken_1.default.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET || "default_secret", { expiresIn: "24h" });
-        console.log("✅ Login successful:", user.email);
-        res.json({
-            message: "Login successful",
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
-    }
-    catch (error) {
-        console.error("❌ Login error:", error.message);
-        res.status(500).json({ error: "Login failed" });
-    }
-}));
-// Create test user route
-app.post("/api/auth/create-test-user", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (process.env.NODE_ENV === 'production') {
-            res.status(403).json({ error: "Not allowed in production" });
-            return;
-        }
-        const testEmail = "test@example.com";
-        const testPassword = "password123";
-        const testName = "Test User";
-        const existingUser = yield User.findOne({ email: testEmail });
-        if (existingUser) {
-            res.json({
-                message: "Test user already exists",
-                email: testEmail,
-                password: testPassword
-            });
-            return;
-        }
-        const hashedPassword = yield bcryptjs_1.default.hash(testPassword, 10);
-        const newUser = new User({
-            email: testEmail,
-            password: hashedPassword,
-            name: testName,
-            role: "admin"
-        });
-        yield newUser.save();
-        res.json({
-            message: "Test user created",
-            email: testEmail,
-            password: testPassword
-        });
-    }
-    catch (error) {
-        console.error("❌ Create test user error:", error.message);
-        res.status(500).json({ error: "Failed to create test user" });
-    }
-}));
-// 404 fallback
+// 404 handler
 app.use("*", (req, res) => {
-    res.status(404).json({ error: "Route not found" });
+    console.log("❌ 404 - Route not found:", req.method, req.url);
+    res.status(404).json({
+        error: "Route not found",
+        path: req.url,
+        method: req.method
+    });
 });
 exports.default = app;
