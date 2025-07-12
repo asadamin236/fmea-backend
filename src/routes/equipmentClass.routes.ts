@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { authenticate } from '../middlewares/authenticate';
+import { authorizeRoles } from '../middlewares/authorizeRoles';
 import {
   getAllEquipmentClasses,
   getEquipmentClassById,
@@ -9,10 +11,10 @@ import {
 
 const router = Router();
 
-router.get('/', getAllEquipmentClasses);
-router.get('/:id', getEquipmentClassById);
-router.post('/', createEquipmentClass);
-router.put('/:id', updateEquipmentClass);
-router.delete('/:id', deleteEquipmentClass);
+router.get('/', authenticate, getAllEquipmentClasses);
+router.get('/:id', authenticate, getEquipmentClassById);
+router.post('/', authenticate, authorizeRoles('admin', 'editor'), createEquipmentClass);
+router.put('/:id', authenticate, authorizeRoles('admin', 'editor'), updateEquipmentClass);
+router.delete('/:id', authenticate, authorizeRoles('admin'), deleteEquipmentClass);
 
 export default router;
