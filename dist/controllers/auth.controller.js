@@ -52,14 +52,25 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ error: "Email and password are required" });
             return;
         }
+        console.log("🔍 Attempting to find user with email:", email);
         const user = yield user_model_1.default.findOne({ email });
-        if (!user || !(yield bcryptjs_1.default.compare(password, user.password))) {
+        console.log("👤 User found:", user ? "Yes" : "No");
+        if (!user) {
             res.status(401).json({ error: "Invalid email or password" });
             return;
         }
+        console.log("🔐 Comparing passwords...");
+        const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password);
+        console.log("✅ Password valid:", isPasswordValid);
+        if (!isPasswordValid) {
+            res.status(401).json({ error: "Invalid email or password" });
+            return;
+        }
+        console.log("🎫 Generating JWT token...");
         const token = jsonwebtoken_1.default.sign({ _id: user._id, role: user.role }, JWT_SECRET, {
             expiresIn: "1h",
         });
+        console.log("✅ Login successful for user:", user.email);
         res.status(200).json({
             message: "Login successful",
             token,
@@ -72,8 +83,13 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (err) {
-        console.error("Login error:", err);
-        res.status(500).json({ error: "Login failed" });
+        console.error("❌ Login error details:", err);
+        console.error("❌ Error message:", err.message);
+        console.error("❌ Error stack:", err.stack);
+        res.status(500).json({
+            error: "Login failed",
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 });
 exports.login = login;
