@@ -34,7 +34,7 @@ import equipmentClassRoutes from "./routes/equipmentClass.routes";
 import equipmentTypeRoutes from "./routes/equipmentType.routes";
 import teamRoutes from "./routes/team.routes";
 import userRoutes from "./routes/user.routes";
-import componentRoutes from "./routes/component.routes";
+import componentRoutes from "./routes/components.routes";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/equipment-class", equipmentClassRoutes);
