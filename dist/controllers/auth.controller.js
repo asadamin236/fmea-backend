@@ -70,7 +70,21 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check if database is connected
         if (!req.app.locals.dbConnected) {
             console.log("❌ Database not connected");
-            res.status(500).json({ error: "Database connection error" });
+            res.status(500).json({
+                error: "Database connection error",
+                message: "Please try again later or contact support"
+            });
+            return;
+        }
+        // Check mongoose connection state
+        const mongoose = require('mongoose');
+        const dbState = mongoose.connection.readyState;
+        if (dbState !== 1) {
+            console.log("❌ Database not ready, state:", dbState);
+            res.status(500).json({
+                error: "Database not ready",
+                message: "Please try again in a few moments"
+            });
             return;
         }
         const user = yield user_model_1.default.findOne({ email: email.toLowerCase() });
@@ -118,7 +132,19 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         if (err.name === 'MongoError' || err.name === 'MongoServerError') {
-            res.status(500).json({ error: "Database error occurred" });
+            console.error("❌ MongoDB error during login:", err.message);
+            res.status(500).json({
+                error: "Database error occurred",
+                message: "Please try again later"
+            });
+            return;
+        }
+        if (err.name === 'MongoNetworkError') {
+            console.error("❌ MongoDB network error during login:", err.message);
+            res.status(500).json({
+                error: "Database connection error",
+                message: "Please try again later"
+            });
             return;
         }
         res.status(500).json({
