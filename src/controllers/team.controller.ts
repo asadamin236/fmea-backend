@@ -5,15 +5,17 @@ import User from "../models/user.model"; // 👈 Make sure the path is correct
 
 
 // ✅ Create a team
-export const createTeam = async (req: AuthenticatedRequest, res: Response) => {
+export const createTeam = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can create teams" });
+      res.status(403).json({ error: "Only admins can create teams" });
+      return;
     }
 
     const { name, description } = req.body;
     if (await Team.findOne({ name })) {
-      return res.status(409).json({ error: "Team already exists" });
+      res.status(409).json({ error: "Team already exists" });
+      return;
     }
 
     const team = await Team.create({ name, description });
@@ -26,7 +28,7 @@ export const createTeam = async (req: AuthenticatedRequest, res: Response) => {
 
 // ✅ Get all teams with member count
 // GET /api/teams
-export const getAllTeamsWithMembers = async (req: Request, res: Response) => {
+export const getAllTeamsWithMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const teams = await Team.find().lean();
 
@@ -48,10 +50,13 @@ export const getAllTeamsWithMembers = async (req: Request, res: Response) => {
 };
 
 // ✅ Get team by ID
-export const getTeamById = async (req: Request, res: Response) => {
+export const getTeamById = async (req: Request, res: Response): Promise<void> => {
   try {
     const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (!team) {
+      res.status(404).json({ error: "Team not found" });
+      return;
+    }
     res.json(team);
   } catch (err) {
     res.status(500).json({ error: "Server Error" });
@@ -59,16 +64,20 @@ export const getTeamById = async (req: Request, res: Response) => {
 };
 
 // ✅ Update team
-export const updateTeam = async (req: AuthenticatedRequest, res: Response) => {
+export const updateTeam = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can update teams" });
+      res.status(403).json({ error: "Only admins can update teams" });
+      return;
     }
 
     const team = await Team.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (!team) {
+      res.status(404).json({ error: "Team not found" });
+      return;
+    }
 
     res.json(team);
   } catch (err) {
@@ -77,14 +86,18 @@ export const updateTeam = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 // ✅ Delete team
-export const deleteTeam = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteTeam = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can delete teams" });
+      res.status(403).json({ error: "Only admins can delete teams" });
+      return;
     }
 
     const team = await Team.findByIdAndDelete(req.params.id);
-    if (!team) return res.status(404).json({ error: "Team not found" });
+    if (!team) {
+      res.status(404).json({ error: "Team not found" });
+      return;
+    }
 
     res.json({ message: "Team deleted successfully" });
   } catch (err) {

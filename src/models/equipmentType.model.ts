@@ -13,13 +13,13 @@ const equipmentTypeSchema = new Schema<IEquipmentType>({
     trim: true,
   },
   equipmentClassId: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'EquipmentClass',
     required: [true, 'Equipment class is required']
   },
   systems: [
     {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'System',
       default: []
     }

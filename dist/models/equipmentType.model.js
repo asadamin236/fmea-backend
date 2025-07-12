@@ -9,13 +9,13 @@ const equipmentTypeSchema = new mongoose_1.Schema({
         trim: true,
     },
     equipmentClassId: {
-        type: mongoose_1.Types.ObjectId,
+        type: mongoose_1.Schema.Types.ObjectId,
         ref: 'EquipmentClass',
         required: [true, 'Equipment class is required']
     },
     systems: [
         {
-            type: mongoose_1.Types.ObjectId,
+            type: mongoose_1.Schema.Types.ObjectId,
             ref: 'System',
             default: []
         }

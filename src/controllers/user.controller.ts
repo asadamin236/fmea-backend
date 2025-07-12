@@ -4,22 +4,25 @@ import User from "../models/user.model";
 import Team from "../models/team.model";
 
 // 👤 Admin creates a user
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, role, teamId } = req.body;
 
     if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: "Missing required fields" });
+      res.status(400).json({ error: "Missing required fields" });
+      return;
     }
 
     if (teamId && !mongoose.Types.ObjectId.isValid(teamId)) {
-      return res.status(400).json({ error: "Invalid team ID" });
+      res.status(400).json({ error: "Invalid team ID" });
+      return;
     }
 
     // 🔍 Check for existing email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ error: "Email already exists" });
+      res.status(409).json({ error: "Email already exists" });
+      return;
     }
 
     // ✅ Proceed with user creation
@@ -50,7 +53,7 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 // 👥 Get all users
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (_req: Request, res: Response): Promise<void> => {
   try {
     const users = await User.find().populate("teamId", "name");
     res.status(200).json(users);
@@ -60,17 +63,19 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 };
 
 // ✏️ Update user
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, role, teamId } = req.body;
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Invalid user ID" });
+      res.status(400).json({ error: "Invalid user ID" });
+      return;
     }
 
     if (teamId && !mongoose.Types.ObjectId.isValid(teamId)) {
-      return res.status(400).json({ error: "Invalid team ID" });
+      res.status(400).json({ error: "Invalid team ID" });
+      return;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -80,7 +85,8 @@ export const updateUser = async (req: Request, res: Response) => {
     ).populate("teamId", "name");
 
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "User not found" });
+      return;
     }
 
     res.json({ message: "User updated", user: updatedUser });
@@ -90,16 +96,20 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 // ❌ Delete user
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Invalid user ID" });
+      res.status(400).json({ error: "Invalid user ID" });
+      return;
     }
 
     const deletedUser = await User.findByIdAndDelete(id);
-    if (!deletedUser) return res.status(404).json({ error: "User not found" });
+    if (!deletedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
 
     res.json({ message: "User deleted", user: deletedUser });
   } catch (err: any) {

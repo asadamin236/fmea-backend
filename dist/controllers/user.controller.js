@@ -21,15 +21,18 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { name, email, password, role, teamId } = req.body;
         if (!name || !email || !password || !role) {
-            return res.status(400).json({ error: "Missing required fields" });
+            res.status(400).json({ error: "Missing required fields" });
+            return;
         }
         if (teamId && !mongoose_1.default.Types.ObjectId.isValid(teamId)) {
-            return res.status(400).json({ error: "Invalid team ID" });
+            res.status(400).json({ error: "Invalid team ID" });
+            return;
         }
         // 🔍 Check for existing email
         const existingUser = yield user_model_1.default.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ error: "Email already exists" });
+            res.status(409).json({ error: "Email already exists" });
+            return;
         }
         // ✅ Proceed with user creation
         const user = yield user_model_1.default.create({
@@ -70,14 +73,17 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const { name, email, role, teamId } = req.body;
         const { id } = req.params;
         if (!mongoose_1.default.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid user ID" });
+            res.status(400).json({ error: "Invalid user ID" });
+            return;
         }
         if (teamId && !mongoose_1.default.Types.ObjectId.isValid(teamId)) {
-            return res.status(400).json({ error: "Invalid team ID" });
+            res.status(400).json({ error: "Invalid team ID" });
+            return;
         }
         const updatedUser = yield user_model_1.default.findByIdAndUpdate(id, { name, email, role, teamId }, { new: true }).populate("teamId", "name");
         if (!updatedUser) {
-            return res.status(404).json({ error: "User not found" });
+            res.status(404).json({ error: "User not found" });
+            return;
         }
         res.json({ message: "User updated", user: updatedUser });
     }
@@ -91,11 +97,14 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { id } = req.params;
         if (!mongoose_1.default.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid user ID" });
+            res.status(400).json({ error: "Invalid user ID" });
+            return;
         }
         const deletedUser = yield user_model_1.default.findByIdAndDelete(id);
-        if (!deletedUser)
-            return res.status(404).json({ error: "User not found" });
+        if (!deletedUser) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
         res.json({ message: "User deleted", user: deletedUser });
     }
     catch (err) {

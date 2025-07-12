@@ -20,11 +20,13 @@ const createTeam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     try {
         if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "admin") {
-            return res.status(403).json({ error: "Only admins can create teams" });
+            res.status(403).json({ error: "Only admins can create teams" });
+            return;
         }
         const { name, description } = req.body;
         if (yield team_model_1.default.findOne({ name })) {
-            return res.status(409).json({ error: "Team already exists" });
+            res.status(409).json({ error: "Team already exists" });
+            return;
         }
         const team = yield team_model_1.default.create({ name, description });
         res.status(201).json(team);
@@ -56,8 +58,10 @@ exports.getAllTeamsWithMembers = getAllTeamsWithMembers;
 const getTeamById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const team = yield team_model_1.default.findById(req.params.id);
-        if (!team)
-            return res.status(404).json({ error: "Team not found" });
+        if (!team) {
+            res.status(404).json({ error: "Team not found" });
+            return;
+        }
         res.json(team);
     }
     catch (err) {
@@ -70,13 +74,16 @@ const updateTeam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     try {
         if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "admin") {
-            return res.status(403).json({ error: "Only admins can update teams" });
+            res.status(403).json({ error: "Only admins can update teams" });
+            return;
         }
         const team = yield team_model_1.default.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
         });
-        if (!team)
-            return res.status(404).json({ error: "Team not found" });
+        if (!team) {
+            res.status(404).json({ error: "Team not found" });
+            return;
+        }
         res.json(team);
     }
     catch (err) {
@@ -89,11 +96,14 @@ const deleteTeam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     try {
         if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "admin") {
-            return res.status(403).json({ error: "Only admins can delete teams" });
+            res.status(403).json({ error: "Only admins can delete teams" });
+            return;
         }
         const team = yield team_model_1.default.findByIdAndDelete(req.params.id);
-        if (!team)
-            return res.status(404).json({ error: "Team not found" });
+        if (!team) {
+            res.status(404).json({ error: "Team not found" });
+            return;
+        }
         res.json({ message: "Team deleted successfully" });
     }
     catch (err) {

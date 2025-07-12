@@ -48,66 +48,71 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, equipmentClassId, systems = [] } = req.body;
         if (!name || !equipmentClassId) {
-            return res
-                .status(400)
-                .json({ message: "Name and equipmentClassId are required." });
+            res.status(400).json({ message: "Name and equipmentClassId are required." });
+            return;
         }
         const created = yield service.create({ name, equipmentClassId, systems });
-        return res.status(201).json(created);
+        res.status(201).json(created);
     }
     catch (error) {
         console.error("Error creating equipment type:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 exports.create = create;
 const getAll = (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const list = yield service.getAll();
-        return res.json(list);
+        res.json(list);
     }
     catch (error) {
         console.error("Error fetching equipment types:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 exports.getAll = getAll;
 const getById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const item = yield service.getById(req.params.id);
-        if (!item)
-            return res.status(404).json({ message: "Equipment type not found" });
-        return res.json(item);
+        if (!item) {
+            res.status(404).json({ message: "Equipment type not found" });
+            return;
+        }
+        res.json(item);
     }
     catch (error) {
         console.error("Error fetching equipment type:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 exports.getById = getById;
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const updated = yield service.update(req.params.id, req.body);
-        if (!updated)
-            return res.status(404).json({ message: "Equipment type not found" });
-        return res.json(updated);
+        if (!updated) {
+            res.status(404).json({ message: "Equipment type not found" });
+            return;
+        }
+        res.json(updated);
     }
     catch (error) {
         console.error("Error updating equipment type:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 exports.update = update;
 const remove = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const deleted = yield service.remove(req.params.id);
-        if (!deleted)
-            return res.status(404).json({ message: "Equipment type not found" });
-        return res.status(204).send();
+        if (!deleted) {
+            res.status(404).json({ message: "Equipment type not found" });
+            return;
+        }
+        res.status(204).send();
     }
     catch (error) {
         console.error("Error deleting equipment type:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
 exports.remove = remove;

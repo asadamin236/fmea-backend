@@ -18,8 +18,10 @@ const getAllEquipmentClasses = (req, res) => __awaiter(void 0, void 0, void 0, f
 exports.getAllEquipmentClasses = getAllEquipmentClasses;
 const getEquipmentClassById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const item = yield equipmentClass_model_1.EquipmentClass.findById(req.params.id);
-    if (!item)
-        return res.status(404).json({ error: 'Not found' });
+    if (!item) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+    }
     res.json(item);
 });
 exports.getEquipmentClassById = getEquipmentClassById;
@@ -37,8 +39,10 @@ exports.createEquipmentClass = createEquipmentClass;
 const updateEquipmentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const updated = yield equipmentClass_model_1.EquipmentClass.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updated)
-            return res.status(404).json({ error: 'Not found' });
+        if (!updated) {
+            res.status(404).json({ error: 'Not found' });
+            return;
+        }
         res.json(updated);
     }
     catch (err) {
@@ -48,8 +52,10 @@ const updateEquipmentClass = (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.updateEquipmentClass = updateEquipmentClass;
 const deleteEquipmentClass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const deleted = yield equipmentClass_model_1.EquipmentClass.findByIdAndDelete(req.params.id);
-    if (!deleted)
-        return res.status(404).json({ error: 'Not found' });
+    if (!deleted) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+    }
     res.status(204).send();
 });
 exports.deleteEquipmentClass = deleteEquipmentClass;

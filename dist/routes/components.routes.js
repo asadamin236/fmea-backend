@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authenticate_1 = require("../middlewares/authenticate");
+const authorizeRoles_1 = require("../middlewares/authorizeRoles");
+const components_controller_1 = require("../controllers/components.controller");
+const router = (0, express_1.Router)();
+router.get('/', authenticate_1.authenticate, components_controller_1.getAllComponents);
+router.get('/:id', authenticate_1.authenticate, components_controller_1.getComponentById);
+router.post('/', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), components_controller_1.createComponent);
+router.put('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), components_controller_1.updateComponent);
+router.delete('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin'), components_controller_1.deleteComponent);
+exports.default = router;

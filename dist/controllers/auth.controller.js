@@ -22,27 +22,26 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password, name, role = "user", adminKey } = req.body;
         if (!email || !password || !name) {
-            return res
-                .status(400)
-                .json({ error: "Email, name, and password are required" });
+            res.status(400).json({ error: "Email, name, and password are required" });
+            return;
         }
         if (role === "admin" && (adminKey === null || adminKey === void 0 ? void 0 : adminKey.trim()) !== (ADMIN_SECRET_KEY === null || ADMIN_SECRET_KEY === void 0 ? void 0 : ADMIN_SECRET_KEY.trim())) {
-            return res
-                .status(403)
-                .json({ error: "Unauthorized to create admin user" });
+            res.status(403).json({ error: "Unauthorized to create admin user" });
+            return;
         }
         const existingUser = yield user_model_1.default.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ error: "User already exists" });
+            res.status(409).json({ error: "User already exists" });
+            return;
         }
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
         const newUser = new user_model_1.default({ email, password: hashedPassword, name, role });
         yield newUser.save();
-        return res.status(201).json({ message: "User registered successfully" });
+        res.status(201).json({ message: "User registered successfully" });
     }
     catch (err) {
         console.error("Signup error:", err);
-        return res.status(500).json({ error: "Registration failed" });
+        res.status(500).json({ error: "Registration failed" });
     }
 });
 exports.signup = signup;
@@ -50,16 +49,18 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ error: "Email and password are required" });
+            res.status(400).json({ error: "Email and password are required" });
+            return;
         }
         const user = yield user_model_1.default.findOne({ email });
         if (!user || !(yield bcryptjs_1.default.compare(password, user.password))) {
-            return res.status(401).json({ error: "Invalid email or password" });
+            res.status(401).json({ error: "Invalid email or password" });
+            return;
         }
         const token = jsonwebtoken_1.default.sign({ _id: user._id, role: user.role }, JWT_SECRET, {
             expiresIn: "1h",
         });
-        return res.status(200).json({
+        res.status(200).json({
             message: "Login successful",
             token,
             user: {
@@ -72,7 +73,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (err) {
         console.error("Login error:", err);
-        return res.status(500).json({ error: "Login failed" });
+        res.status(500).json({ error: "Login failed" });
     }
 });
 exports.login = login;
