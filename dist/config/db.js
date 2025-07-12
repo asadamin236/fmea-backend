@@ -18,14 +18,16 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const mongoURI = process.env.MONGO_URI;
         if (!mongoURI) {
-            throw new Error("MongoDB URI is not defined in environment variables");
+            console.warn("⚠️ MongoDB URI is not defined in environment variables");
+            return false;
         }
         yield mongoose_1.default.connect(mongoURI);
         console.log("✅ MongoDB connected");
+        return true;
     }
     catch (error) {
         console.error("❌ DB connection failed:", error);
-        process.exit(1);
+        return false;
     }
 });
 exports.connectDB = connectDB;
