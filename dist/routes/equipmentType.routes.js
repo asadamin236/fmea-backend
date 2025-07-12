@@ -34,11 +34,13 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const authenticate_1 = require("../middlewares/authenticate");
+const authorizeRoles_1 = require("../middlewares/authorizeRoles");
 const controller = __importStar(require("../controllers/equipmentType.controller"));
 const router = (0, express_1.Router)();
-router.post('/', controller.create); // Create new equipment type
-router.get('/', controller.getAll); // Get all equipment types
-router.get('/:id', controller.getById); // Get single equipment type
-router.put('/:id', controller.update); // Update
-router.delete('/:id', controller.remove); // Delete
+router.post('/', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), controller.create); // Create new equipment type
+router.get('/', authenticate_1.authenticate, controller.getAll); // Get all equipment types
+router.get('/:id', authenticate_1.authenticate, controller.getById); // Get single equipment type
+router.put('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), controller.update); // Update
+router.delete('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin'), controller.remove); // Delete
 exports.default = router;

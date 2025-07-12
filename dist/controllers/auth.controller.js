@@ -18,7 +18,6 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || "default_admin_key";
-// --- Signup ---
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password, name, role = "user", adminKey } = req.body;
@@ -47,7 +46,6 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.signup = signup;
-// --- Login ---
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;

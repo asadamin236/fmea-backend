@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const authenticate_1 = require("../middlewares/authenticate");
+const authorizeRoles_1 = require("../middlewares/authorizeRoles");
 const equipmentClass_controller_1 = require("../controllers/equipmentClass.controller");
 const router = (0, express_1.Router)();
-router.get('/', equipmentClass_controller_1.getAllEquipmentClasses);
-router.get('/:id', equipmentClass_controller_1.getEquipmentClassById);
-router.post('/', equipmentClass_controller_1.createEquipmentClass);
-router.put('/:id', equipmentClass_controller_1.updateEquipmentClass);
-router.delete('/:id', equipmentClass_controller_1.deleteEquipmentClass);
+router.get('/', authenticate_1.authenticate, equipmentClass_controller_1.getAllEquipmentClasses);
+router.get('/:id', authenticate_1.authenticate, equipmentClass_controller_1.getEquipmentClassById);
+router.post('/', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), equipmentClass_controller_1.createEquipmentClass);
+router.put('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin', 'editor'), equipmentClass_controller_1.updateEquipmentClass);
+router.delete('/:id', authenticate_1.authenticate, (0, authorizeRoles_1.authorizeRoles)('admin'), equipmentClass_controller_1.deleteEquipmentClass);
 exports.default = router;

@@ -1,9 +1,9 @@
-import { Response, NextFunction } from "express";
-import { AuthenticatedRequest } from "./authenticate";
+import { Request, Response, NextFunction } from "express";
 
 export const authorizeRoles = (...roles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (!user || !roles.includes(user.role)) {
       return res.status(403).json({ error: "Access denied" });
     }
     next();

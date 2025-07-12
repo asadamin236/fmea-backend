@@ -10,7 +10,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticate = (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -26,12 +26,12 @@ export const authenticate = (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "default_secret"
-    ) as AuthenticatedRequest["user"];
+    ) as any;
 
     // Optional: debug output to verify token structure
     console.log("✅ Decoded Token:", decoded);
 
-    req.user = decoded;
+    (req as any).user = decoded;
     next();
   } catch (err) {
     console.error("❌ JWT verification failed:", err);
