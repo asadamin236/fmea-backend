@@ -47,15 +47,36 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.signup = signup;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("🔐 Login attempt started");
+        console.log("📧 Request body:", { email: req.body.email, password: req.body.password ? "***" : "missing" });
         const { email, password } = req.body;
+        // Validate input
         if (!email || !password) {
+            console.log("❌ Missing email or password");
             res.status(400).json({ error: "Email and password are required" });
             return;
         }
+        if (typeof email !== 'string' || typeof password !== 'string') {
+            console.log("❌ Invalid email or password type");
+            res.status(400).json({ error: "Email and password must be strings" });
+            return;
+        }
+        if (email.trim() === '' || password.trim() === '') {
+            console.log("❌ Empty email or password");
+            res.status(400).json({ error: "Email and password cannot be empty" });
+            return;
+        }
         console.log("🔍 Attempting to find user with email:", email);
-        const user = yield user_model_1.default.findOne({ email });
+        // Check if database is connected
+        if (!req.app.locals.dbConnected) {
+            console.log("❌ Database not connected");
+            res.status(500).json({ error: "Database connection error" });
+            return;
+        }
+        const user = yield user_model_1.default.findOne({ email: email.toLowerCase() });
         console.log("👤 User found:", user ? "Yes" : "No");
         if (!user) {
+            console.log("❌ User not found");
             res.status(401).json({ error: "Invalid email or password" });
             return;
         }
@@ -63,12 +84,17 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password);
         console.log("✅ Password valid:", isPasswordValid);
         if (!isPasswordValid) {
+            console.log("❌ Invalid password");
             res.status(401).json({ error: "Invalid email or password" });
             return;
         }
         console.log("🎫 Generating JWT token...");
-        const token = jsonwebtoken_1.default.sign({ _id: user._id, role: user.role }, JWT_SECRET, {
-            expiresIn: "1h",
+        const token = jsonwebtoken_1.default.sign({
+            _id: user._id,
+            role: user.role,
+            email: user.email
+        }, JWT_SECRET, {
+            expiresIn: "24h", // Increased token expiry
         });
         console.log("✅ Login successful for user:", user.email);
         res.status(200).json({
@@ -86,6 +112,15 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         console.error("❌ Login error details:", err);
         console.error("❌ Error message:", err.message);
         console.error("❌ Error stack:", err.stack);
+        // Check for specific error types
+        if (err.name === 'ValidationError') {
+            res.status(400).json({ error: "Invalid input data" });
+            return;
+        }
+        if (err.name === 'MongoError' || err.name === 'MongoServerError') {
+            res.status(500).json({ error: "Database error occurred" });
+            return;
+        }
         res.status(500).json({
             error: "Login failed",
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
