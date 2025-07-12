@@ -45,10 +45,33 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check database connection
+    // Check database connection with retry logic
     const mongoose = require('mongoose');
-    const dbState = mongoose.connection.readyState;
+    let dbState = mongoose.connection.readyState;
     console.log("📊 Database state:", dbState);
+    
+    // If not connected, try to connect
+    if (dbState !== 1) {
+      console.log("🔄 Attempting to reconnect to database...");
+      try {
+        await mongoose.connect(process.env.MONGO_URI!, {
+          maxPoolSize: 1,
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+          bufferCommands: false,
+          bufferMaxEntries: 0,
+        });
+        dbState = mongoose.connection.readyState;
+        console.log("📊 Database state after reconnect:", dbState);
+      } catch (dbError) {
+        console.error("❌ Database reconnect failed:", dbError);
+        res.status(500).json({ 
+          error: "Database connection error",
+          message: "Unable to connect to database. Please try again later."
+        });
+        return;
+      }
+    }
     
     if (dbState !== 1) {
       res.status(500).json({ 
