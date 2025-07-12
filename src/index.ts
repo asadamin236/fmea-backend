@@ -15,12 +15,26 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin); // ✅ Return the actual origin, NOT '*'
+        callback(null, origin);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // ✅ Needed to support cookies/headers
+    credentials: true,
+  })
+);
+
+app.options(
+  "*",
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
