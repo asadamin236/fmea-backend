@@ -1,46 +1,67 @@
 import express from "express";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
 import cors from "cors";
-import { connectDB } from "./config/db";
+import dotenv from "dotenv";
 
 dotenv.config();
+
 const app = express();
-
-connectDB();
-
-const allowedOrigins = ["https://fmea-frontend.vercel.app"];
-
-const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, origin);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: false, // Remove credentials to fix CORS issue
-};
-
-app.use(cors(corsOptions));
-
-// ✅ This must be BEFORE routes
-app.options("*", cors(corsOptions));
-
+app.use(cors());
 app.use(express.json());
 
-// Routes
-import authRoutes from "./routes/auth.routes";
-import equipmentClassRoutes from "./routes/equipmentClass.routes";
-import equipmentTypeRoutes from "./routes/equipmentType.routes";
-import teamRoutes from "./routes/team.routes";
-import userRoutes from "./routes/user.routes";
-import componentRoutes from "./routes/components.routes";
+// Simple health check without DB
+app.get("/", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    message: "Backend running",
+    timestamp: new Date().toISOString()
+  });
+});
 
-app.use("/api/auth", authRoutes);
-app.use("/api/equipment-class", equipmentClassRoutes);
-app.use("/api/equipment-types", equipmentTypeRoutes);
-app.use("/api/teams", teamRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/components", componentRoutes);
+// Test environment variables
+app.get("/env-test", (req, res) => {
+  res.json({
+    hasMongoURI: !!process.env.MONGO_URI,
+    mongoURILength: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
+    nodeEnv: process.env.NODE_ENV || "development",
+    hasJWTSecret: !!process.env.JWT_SECRET
+  });
+});
+
+// Try to connect to MongoDB
+let dbConnected = false;
+const mongoURI = process.env.MONGO_URI;
+
+if (mongoURI) {
+  console.log("🔗 Attempting MongoDB connection...");
+  mongoose
+    .connect(mongoURI)
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+      dbConnected = true;
+    })
+    .catch((err) => {
+      console.error("❌ MongoDB connection failed:", err.message);
+      dbConnected = false;
+    });
+} else {
+  console.error("❌ MONGO_URI not found in environment variables");
+}
+
+// DB status route
+app.get("/db-status", (req, res) => {
+  const state = mongoose.connection.readyState;
+  res.json({
+    dbState: state,
+    isConnected: state === 1,
+    dbConnected: dbConnected,
+    hasMongoURI: !!mongoURI
+  });
+});
+
+// 404 fallback
+app.use("*", (req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
 
 export default app;
