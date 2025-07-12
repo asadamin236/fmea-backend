@@ -26,7 +26,7 @@ export const createTeam = async (req: AuthenticatedRequest, res: Response) => {
 
 // ✅ Get all teams with member count
 // GET /api/teams
-export const getAllTeamsWithMembers = async (req, res) => {
+export const getAllTeamsWithMembers = async (req: Request, res: Response) => {
   try {
     const teams = await Team.find().lean();
 

@@ -4,7 +4,7 @@ import User from "../models/user.model";
 import Team from "../models/team.model";
 
 // 👤 Admin creates a user
-export const createUser = async (req, res) => {
+export const createUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role, teamId } = req.body;
 

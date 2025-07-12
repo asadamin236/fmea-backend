@@ -13,11 +13,12 @@ export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Token missing or malformed" });
+    res.status(401).json({ error: "Token missing or malformed" });
+    return;
   }
 
   const token = authHeader.split(" ")[1];
@@ -35,6 +36,7 @@ export const authenticate = (
     next();
   } catch (err) {
     console.error("❌ JWT verification failed:", err);
-    return res.status(401).json({ error: "Invalid token" });
+    res.status(401).json({ error: "Invalid token" });
+    return;
   }
 };
