@@ -14,6 +14,10 @@ const app = express();
 connectDB().then((dbConnected) => {
   app.locals.dbConnected = dbConnected;
   console.log("📊 Database connection status:", dbConnected);
+  console.log("🔧 Environment check:");
+  console.log("  - NODE_ENV:", process.env.NODE_ENV);
+  console.log("  - MONGO_URI exists:", !!process.env.MONGO_URI);
+  console.log("  - JWT_SECRET exists:", !!process.env.JWT_SECRET);
 });
 
 // CORS configuration for production
@@ -68,6 +72,18 @@ app.use("/api/manufacturers", manufacturerRoutes);
 // Basic routes
 app.get("/", (req, res) => {
   res.json({ message: "FMEA Backend is running!" });
+});
+
+// Database status route
+app.get("/db-status", (req, res) => {
+  const mongoose = require('mongoose');
+  const dbState = mongoose.connection.readyState;
+  res.json({
+    dbState,
+    isConnected: dbState === 1,
+    hasMongoURI: !!process.env.MONGO_URI,
+    nodeEnv: process.env.NODE_ENV || "development"
+  });
 });
 
 // Error handling
