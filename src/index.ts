@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db";
+import serverless from "serverless-http";
 
 dotenv.config();
 
@@ -76,4 +77,6 @@ app.use("*", (req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
+// Export for Vercel serverless
 export default app;
+export const handler = serverless(app);

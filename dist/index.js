@@ -3,10 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.handler = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./config/db");
+const serverless_http_1 = __importDefault(require("serverless-http"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // CORS Configuration
@@ -66,4 +68,6 @@ app.use((err, req, res, next) => {
 app.use("*", (req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
+// Export for Vercel serverless
 exports.default = app;
+exports.handler = (0, serverless_http_1.default)(app);
