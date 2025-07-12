@@ -1,27 +1,86 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from "../src/config/db";
+import serverless from "serverless-http";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+dotenv.config();
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+const app = express();
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+// CORS Configuration
+app.use(
+  cors({
+    origin: ["https://fmea-frontend.vercel.app", "http://localhost:3000"],
+    credentials: false,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-  return res.json({ 
+app.use(express.json());
+
+// Connect to MongoDB
+connectDB().then((dbConnected) => {
+  app.locals.dbConnected = dbConnected;
+  console.log("📊 Database connection status:", dbConnected);
+});
+
+// Request logger
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// Routes
+import authRoutes from "../src/routes/auth.routes";
+import equipmentClassRoutes from "../src/routes/equipmentClass.routes";
+import equipmentTypeRoutes from "../src/routes/equipmentType.routes";
+import teamRoutes from "../src/routes/team.routes";
+import userRoutes from "../src/routes/user.routes";
+import componentRoutes from "../src/routes/components.routes";
+import manufacturerRoutes from "../src/routes/manufacturer.routes";
+
+app.use("/api/auth", authRoutes);
+app.use("/api/equipment-class", equipmentClassRoutes);
+app.use("/api/equipment-types", equipmentTypeRoutes);
+app.use("/api/teams", teamRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/components", componentRoutes);
+app.use("/api/manufacturers", manufacturerRoutes);
+
+// Default route
+app.get("/", (req, res) => {
+  res.json({ 
     message: "FMEA Backend is running!",
     status: "active",
     version: "1.0.0"
   });
-} 
+});
+
+// DB Status Route
+app.get("/db-status", (req, res) => {
+  const mongoose = require("mongoose");
+  const dbState = mongoose.connection.readyState;
+  res.json({
+    dbState,
+    isConnected: dbState === 1,
+    hasMongoURI: !!process.env.MONGO_URI,
+    nodeEnv: process.env.NODE_ENV || "development",
+  });
+});
+
+// Error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("❌ Global error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+// 404
+app.use("*", (req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Export for Vercel serverless
+export default app;
+export const handler = serverless(app); 
