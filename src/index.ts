@@ -2,8 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db";
-import serverless from "serverless-http";
-import { VercelRequest, VercelResponse } from '@vercel/node';
+const serverless = require("serverless-http");
 
 dotenv.config();
 
@@ -79,9 +78,7 @@ app.use("*", (req, res) => {
 });
 
 // Export for Vercel serverless
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // ... (login logic)
-}
+export default app;
 export const handler = serverless(app);
 
 // Start server for local development
