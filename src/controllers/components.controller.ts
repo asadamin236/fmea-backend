@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Component } from "../models/component.model";
+import { Component } from "../models/components.model";
 
 export const getAllComponents = async (req: Request, res: Response) => {
   const data = await Component.find();

@@ -7,7 +7,7 @@ import {
   createComponent,
   updateComponent,
   deleteComponent,
-} from '../controllers/component.controller';
+} from '../controllers/components.controller';
 
 const router = Router();
 
