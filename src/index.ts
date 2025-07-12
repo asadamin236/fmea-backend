@@ -80,3 +80,17 @@ app.use("*", (req, res) => {
 // Export for Vercel serverless
 export default app;
 export const handler = serverless(app);
+
+// Start server for local development
+const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`📡 API available at http://localhost:${PORT}`);
+    console.log(`🔍 Health check: http://localhost:${PORT}/db-status`);
+  }).on('error', (err) => {
+    console.error('❌ Server startup error:', err);
+    process.exit(1);
+  });
+}
