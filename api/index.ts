@@ -1,4 +1,3 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
